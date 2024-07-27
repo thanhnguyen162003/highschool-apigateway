@@ -12,6 +12,21 @@ builder.Services
     .AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
+//add caching
+builder.Services.AddOutputCache(options =>
+{
+    options.AddPolicy("customPolicy", builder => builder.Expire(TimeSpan.FromSeconds(20)));
+});
+
+//cors config
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("customCors", builder =>
+    {
+        builder.AllowAnyOrigin();
+    });
+});
+
 //add authentication/authorization
 builder.Services.AddAuthorization(options =>
 {
@@ -36,6 +51,8 @@ app.UseSwagger();
 app.UseSwaggerUI();
 app.UseRateLimiter();
 app.UseAuthentication();
+app.UseCors();
 app.UseAuthorization();
+app.UseOutputCache();
 app.MapReverseProxy();
 app.Run();
