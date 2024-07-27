@@ -12,7 +12,12 @@ builder.Services
     .AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-
+//add authentication/authorization
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("customPolicyAuthen", policy =>
+        policy.RequireAuthenticatedUser());
+});
 //add rate limit
 builder.Services.AddRateLimiter(rateLimiterOptions =>
 {
@@ -30,6 +35,7 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseRateLimiter();
-app.MapGet("/", () => "Hello World!");
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapReverseProxy();
 app.Run();
