@@ -1,5 +1,8 @@
+using System.Text;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,10 +31,29 @@ builder.Services.AddCors(options =>
 });
 
 //add authentication/authorization
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["JWTSetting:ValidIssuer"],
+            ValidAudience = builder.Configuration["JWTSetting:ValidAudience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWTSetting:SecurityKey"]))
+        };
+    });
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("customPolicyAuthen", policy =>
-        policy.RequireAuthenticatedUser());
+        policy.RequireAuthenticatedUser().RequireClaim("custom-role", "authorize o day"));
 });
 //add rate limit
 builder.Services.AddRateLimiter(rateLimiterOptions =>
