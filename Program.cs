@@ -27,6 +27,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("customCors", builder =>
     {
         builder.AllowAnyOrigin();
+        builder.AllowAnyHeader();
+        builder.AllowAnyMethod();
     });
 });
 
@@ -68,7 +70,7 @@ builder.Services.AddRateLimiter(rateLimiterOptions =>
 });
 
 var app = builder.Build();
-
+// app.UseHttpsRedirection();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseRateLimiter();
