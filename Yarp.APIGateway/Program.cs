@@ -77,22 +77,22 @@ builder.Services.AddAuthorization(options =>
             .RequireClaim("Role", "1", "2", "3", "4"));
 });
 //add rate limit
-// builder.Services.AddRateLimiter(rateLimiterOptions =>
-// {
-//     rateLimiterOptions.AddFixedWindowLimiter("fixed", options =>
-//     {
-//         options.PermitLimit = 10;
-//         options.Window = TimeSpan.FromSeconds(10);
-//         options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-//         options.QueueLimit = 5;
-//     });
-// });
+builder.Services.AddRateLimiter(rateLimiterOptions =>
+{
+    rateLimiterOptions.AddFixedWindowLimiter("fixed", options =>
+    {
+        options.PermitLimit = 10;
+        options.Window = TimeSpan.FromSeconds(10);
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 5;
+    });
+});
 
 var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseSwagger();
 app.UseSwaggerUI();
-// app.UseRateLimiter();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseCors();
 app.UseAuthorization();
