@@ -92,7 +92,7 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseRateLimiter();
+// app.UseRateLimiter();
 app.UseAuthentication();
 app.UseCors();
 app.UseAuthorization();
