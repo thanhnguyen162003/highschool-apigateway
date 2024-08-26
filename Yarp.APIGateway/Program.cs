@@ -3,6 +3,9 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +34,21 @@ builder.Services.AddCors(options =>
         builder.AllowAnyMethod();
     });
 });
+//adding OpenTelemetry for watch monitoring
+// builder.Services
+//     .AddOpenTelemetry()
+//     .ConfigureResource(resource => resource.AddService(serviceName))
+//     .WithTracing(tracing =>
+//     {
+//         tracing
+//             .AddAspNetCoreInstrumentation()
+//             .AddHttpClientInstrumentation()
+//             .AddEntityFrameworkCoreInstrumentation()
+//             .AddRedisInstrumentation()
+//             .AddNpgsql();
+//
+//         tracing.AddOtlpExporter();
+//     });
 
 //add authentication/authorization
 builder.Services.AddAuthentication(options =>
@@ -54,8 +72,9 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("customPolicyAuthen", policy =>
-        policy.RequireAuthenticatedUser().RequireClaim("custom-role", "authorize o day"));
+    options.AddPolicy("customPolicyAuthentication", policy =>
+        policy.RequireAuthenticatedUser()
+            .RequireClaim("Role", "1", "2", "3", "4"));
 });
 //add rate limit
 builder.Services.AddRateLimiter(rateLimiterOptions =>
