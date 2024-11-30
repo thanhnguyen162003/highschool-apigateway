@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Yarp.APIGateway.Middelwares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,14 +78,25 @@ builder.Services.AddAuthorization(options =>
             .RequireClaim("Role", "1", "2", "3", "4"));
 });
 //add rate limit
+var rateLimiterConfig = builder.Configuration.GetSection("RateLimiter");
+
 builder.Services.AddRateLimiter(rateLimiterOptions =>
 {
     rateLimiterOptions.AddFixedWindowLimiter("fixed", options =>
     {
-        options.PermitLimit = 10;
-        options.Window = TimeSpan.FromSeconds(10);
+        options.PermitLimit = rateLimiterConfig.GetValue<int>("Fixed:PermitLimit");
+        options.Window = TimeSpan.FromSeconds(rateLimiterConfig.GetValue<int>("Fixed:WindowInSeconds"));
         options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        options.QueueLimit = 5;
+        options.QueueLimit = rateLimiterConfig.GetValue<int>("Fixed:QueueLimit");
+    });
+
+    rateLimiterOptions.AddTokenBucketLimiter("burst", options =>
+    {
+        options.TokenLimit = rateLimiterConfig.GetValue<int>("Burst:TokenLimit");
+        options.TokensPerPeriod = rateLimiterConfig.GetValue<int>("Burst:TokensPerPeriod");
+        options.ReplenishmentPeriod = TimeSpan.FromSeconds(rateLimiterConfig.GetValue<int>("Burst:ReplenishmentPeriodInSeconds"));
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = rateLimiterConfig.GetValue<int>("Burst:QueueLimit");
     });
 });
 
@@ -92,6 +104,8 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseMiddleware<RequestResponseLoggingMiddleware>();
+app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseCors();
