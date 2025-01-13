@@ -10,6 +10,8 @@ using Yarp.APIGateway.Middelwares;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 //swagger config
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -101,6 +103,8 @@ builder.Services.AddRateLimiter(rateLimiterOptions =>
 });
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 app.UseHttpsRedirection();
 app.UseSwagger();
 app.UseSwaggerUI();
