@@ -37,6 +37,7 @@ builder.Services.AddCors(options =>
 		builder.AllowAnyOrigin();
 		builder.AllowAnyHeader();
 		builder.AllowAnyMethod();
+		builder.SetPreflightMaxAge(TimeSpan.FromMinutes(10));
 	});
 });
 //adding OpenTelemetry for watch monitoring
